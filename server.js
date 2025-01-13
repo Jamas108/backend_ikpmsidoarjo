@@ -538,7 +538,7 @@ app.post('/participate', async (req, res) => {
 });
 
 // Rute untuk mendapatkan peserta berdasarkan eventId
-app.get('/participations/:eventId', async (req, res) => {
+app.get('/participations/:kegiatanId', async (req, res) => {
     const { kegiatanId } = req.params;
 
     try {
