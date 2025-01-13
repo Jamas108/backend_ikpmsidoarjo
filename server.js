@@ -348,10 +348,10 @@ app.get('/users', async (req, res) => {
 
 
 
-//EVENT BACKEND
+//KEGIATAN BACKEND
 
-// Skema dan model Mongoose untuk Event
-const EventSchema = new mongoose.Schema({
+// Skema dan model Mongoose untuk Kegiatan
+const KegiatanSchema = new mongoose.Schema({
     name: { type: String, required: true },
     date: { type: String, required: true },
     time: { type: String, required: true },
@@ -360,7 +360,7 @@ const EventSchema = new mongoose.Schema({
     poster: { type: String, required: true },
 });
 
-const Event = mongoose.model('Event', EventSchema);
+const Kegiatan = mongoose.model('Kegiatan', KegiatanSchema);
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -394,8 +394,8 @@ async function uploadToImgur(imageBuffer) {
     }
 }
 
-// Endpoint untuk menambah event baru
-app.post('/events', upload.single('poster'), async (req, res) => {
+// Endpoint untuk menambah kegiatan baru
+app.post('/kegiatan', upload.single('poster'), async (req, res) => {
     const { name, date, time, location, description } = req.body;
     const posterBuffer = req.file ? req.file.buffer : null; // Ambil buffer gambar dari file yang di-upload
 
@@ -408,8 +408,8 @@ app.post('/events', upload.single('poster'), async (req, res) => {
         // Unggah gambar ke Imgur
         const posterUrl = await uploadToImgur(posterBuffer);
 
-        // Simpan data event ke MongoDB dengan URL gambar dari Imgur
-        const newEvent = new Event({
+        // Simpan data kegiatan ke MongoDB dengan URL gambar dari Imgur
+        const newKegiatan = new Kegiatan({
             name,
             date,
             time,
@@ -418,21 +418,21 @@ app.post('/events', upload.single('poster'), async (req, res) => {
             poster: posterUrl, // URL dari Imgur
         });
 
-        await newEvent.save();
-        res.status(201).json(newEvent); // Kembalikan data event yang baru dibuat
+        await newKegiatan.save();
+        res.status(201).json(newKegiatan); // Kembalikan data kegiatan yang baru dibuat
     } catch (error) {
-        console.error('Error creating event:', error.message);
-        res.status(500).json({ error: 'Error creating event' });
+        console.error('Kesalahan membuat kegiatan:', error.message);
+        res.status(500).json({ error: 'kesalahan membuat kagiatan' });
     }
 });
 
-// Rute untuk mendapatkan semua event
-app.get('/events', async (req, res) => {
+// Rute untuk mendapatkan semua kegiatan
+app.get('/kegiatans', async (req, res) => {
     try {
-        const events = await Event.find();
-        res.json(events);
+        const kegiatans = await Kegiatan.find();
+        res.json(kegiatans);
     } catch (err) {
-        res.status(500).json({ message: 'Error fetching events' });
+        res.status(500).json({ message: 'Kesalahan mengambil data kegiatan' });
     }
 });
 
@@ -440,9 +440,9 @@ app.get('/events', async (req, res) => {
 app.use('/uploads/posterevent', express.static('posterevent'));
 
 
-// Rute untuk memperbarui event
-// Endpoint untuk memperbarui event
-app.put('/events/:id', upload.single('poster'), async (req, res) => {
+// Rute untuk memperbarui kegiatan
+// Endpoint untuk memperbarui kegiatan
+app.put('/kegiatans/:id', upload.single('poster'), async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -450,15 +450,15 @@ app.put('/events/:id', upload.single('poster'), async (req, res) => {
     }
 
     try {
-        const event = await Event.findById(id);
-        if (!event) return res.status(404).json({ message: 'Event not found' });
+        const kegiatan = await Kegiatan.findById(id);
+        if (!kegiatan) return res.status(404).json({ message: 'Kegiatan tidak ditemukan' });
 
-        // Update field event
-        event.name = req.body.name || event.name;
-        event.date = req.body.date || event.date;
-        event.time = req.body.time || event.time;
-        event.location = req.body.location || event.location;
-        event.description = req.body.description || event.description;
+        // Update field kegiatan
+        kegiatan.name = req.body.name || kegiatan.name;
+        kegiatan.date = req.body.date || kegiatan.date;
+        kegiatan.time = req.body.time || kegiatan.time;
+        kegiatan.location = req.body.location || kegiatan.location;
+        kegiatan.description = req.body.description || kegiatan.description;
 
         // Update poster jika ada file baru
         if (req.file) {
@@ -468,7 +468,7 @@ app.put('/events/:id', upload.single('poster'), async (req, res) => {
                 const posterUrl = await uploadToImgur(posterBuffer);
 
                 // Simpan URL poster baru
-                event.poster = posterUrl;
+                kegiatan.poster = posterUrl;
             } catch (error) {
                 return res.status(500).json({
                     message: 'Failed to upload poster to Imgur',
@@ -477,16 +477,16 @@ app.put('/events/:id', upload.single('poster'), async (req, res) => {
             }
         }
 
-        // Simpan pembaruan event
-        const updatedEvent = await event.save();
-        res.json(updatedEvent);
+        // Simpan pembaruan kegiatan
+        const updatedKegiatan = await kegiatan.save();
+        res.json(updatedKegiatan);
     } catch (error) {
-        console.error('Error updating event:', error.message);
-        res.status(500).json({ message: 'Error updating event' });
+        console.error('Kesalahan memperbarui kegiatan:', error.message);
+        res.status(500).json({ message: 'Kesalahan memperbarui kegiatan' });
     }
 });
 
-app.delete('/events/:id', async (req, res) => {
+app.delete('/kegiatans/:id', async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -494,41 +494,41 @@ app.delete('/events/:id', async (req, res) => {
     }
 
     try {
-        const event = await Event.findByIdAndDelete(id);
-        if (!event) {
-            return res.status(404).json({ message: 'Event not found' });
+        const kegiatan = await Kegiatan.findByIdAndDelete(id);
+        if (!kegiatan) {
+            return res.status(404).json({ message: 'Kegiatan tidak ditemukan' });
         }
-        res.status(200).json({ message: 'Event deleted successfully' });
+        res.status(200).json({ message: 'Kegiatan berhasil dihapus' });
     } catch (error) {
-        console.error('Error deleting event:', error.message);
-        res.status(500).json({ message: 'Failed to delete event' });
+        console.error('Gagal menghapus kegiatan:', error.message);
+        res.status(500).json({ message: 'Gagal menghapus kegiatan' });
     }
 });
 
 // Define the Participation model
 const Participation = mongoose.model('Participation', new mongoose.Schema({
     userId: { type: String, required: true },
-    eventId: { type: String, required: true },
+    kegiatanId: { type: String, required: true },
     createdAt: { type: Date, default: Date.now }
 }));
 
-// Endpoint for event registration
+// Endpoint for kegiatan registration
 app.post('/participate', async (req, res) => {
-    const { userId, eventId } = req.body;
+    const { userId, kegiatanId } = req.body;
 
-    if (!userId || !eventId) {
-        return res.status(400).json({ message: 'User ID and Event ID are required' });
+    if (!userId || !kegiatanId) {
+        return res.status(400).json({ message: 'User ID and Kegiatan ID are required' });
     }
 
     try {
-        // Check if the user is already registered for the event
-        const existingParticipation = await Participation.findOne({ userId, eventId });
+        // Check if the user is already registered for the kegiatan
+        const existingParticipation = await Participation.findOne({ userId, kegiatanId });
         if (existingParticipation) {
             return res.status(400).json({ message: 'Anda sudah terdaftar pada kegiatan ini' });
         }
 
         // Create a new participation record
-        const participation = new Participation({ userId, eventId });
+        const participation = new Participation({ userId, kegiatanId });
         await participation.save();
 
         res.status(201).json({ message: 'Berhasil mendaftar kegiatan!' });
@@ -537,16 +537,16 @@ app.post('/participate', async (req, res) => {
     }
 });
 
-// Rute untuk mendapatkan peserta berdasarkan eventId
-app.get('/participations/:eventId', async (req, res) => {
-    const { eventId } = req.params;
+// Rute untuk mendapatkan peserta berdasarkan kegiatanId
+app.get('/participations/:kegiatanId', async (req, res) => {
+    const { kegiatanId } = req.params;
 
     try {
-        // Cari semua partisipasi berdasarkan eventId
-        const participations = await Participation.find({ eventId: eventId });
+        // Cari semua partisipasi berdasarkan kegiatanId
+        const participations = await Participation.find({ kegiatanId: kegiatanId });
 
         if (!participations || participations.length === 0) {
-            return res.status(404).json({ message: 'No participants found for this event' });
+            return res.status(404).json({ message: 'No participants found for this kegiatan' });
         }
 
         // Ambil data pengguna berdasarkan stambuk yang ada di participations
@@ -569,7 +569,7 @@ app.get('/participations/:eventId', async (req, res) => {
     }
 });
 
-// MENGHAPUS PESERTA EVENT
+// MENGHAPUS PESERTA KEGIATAN
 app.delete('/participations/:id', async (req, res) => {
     const { id } = req.params;
 
@@ -601,13 +601,13 @@ app.get('/historyevent/:userId', async (req, res) => {
             return res.status(404).json({ message: 'No participations found for this user' });
         }
 
-        // Mengambil hanya eventId dari partisipasi
-        const eventIds = participations.map(participation => participation.eventId);
-        console.log('Event IDs:', eventIds); // Debug
+        // Mengambil hanya kegiatanId dari partisipasi
+        const KegiatanIds = participations.map(participation => participation.kegiatanId);
+        console.log('Kegiatan IDs:', KegiatanIds); // Debug
 
-        // Fetch detail event menggunakan eventId
-        const events = await Event.find({ _id: { $in: eventIds } });
-        res.status(200).json(events);
+        // Fetch detail kegiatan menggunakan keguiatanId
+        const kegiatan = await Kegiatan.find({ _id: { $in: KegiatanIds } });
+        res.status(200).json(kegiatan);
     } catch (error) {
         console.error('Error fetching participations:', error);
         res.status(500).json({ message: 'Failed to fetch participations', error });
@@ -617,7 +617,7 @@ app.get('/historyevent/:userId', async (req, res) => {
 app.get('/participations/user/:stambuk', async (req, res) => {
     const { stambuk } = req.params;
     try {
-        const participations = await Participation.find({ stambuk }).populate('event');
+        const participations = await Participation.find({ stambuk }).populate('kegiatan');
         res.json(participations.map(p => p.event));
     } catch (err) {
         res.status(500).json({ message: 'Error fetching participations', error: err });
