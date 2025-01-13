@@ -395,7 +395,7 @@ async function uploadToImgur(imageBuffer) {
 }
 
 // Endpoint untuk menambah kegiatan baru
-app.post('/kegiatans', upload.single('poster'), async (req, res) => {
+app.post('/kegiatan', upload.single('poster'), async (req, res) => {
     const { name, date, time, location, description } = req.body;
     const posterBuffer = req.file ? req.file.buffer : null; // Ambil buffer gambar dari file yang di-upload
 
@@ -512,16 +512,16 @@ const Participation = mongoose.model('Participation', new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 }));
 
-// Endpoint for kegiatan registration
+// Endpoint for event registration
 app.post('/participate', async (req, res) => {
     const { userId, kegiatanId } = req.body;
 
     if (!userId || !kegiatanId) {
-        return res.status(400).json({ message: 'User ID and Kegiatan ID are required' });
+        return res.status(400).json({ message: 'User ID and Event ID are required' });
     }
 
     try {
-        // Check if the user is already registered for the kegiatan
+        // Check if the user is already registered for the event
         const existingParticipation = await Participation.findOne({ userId, kegiatanId });
         if (existingParticipation) {
             return res.status(400).json({ message: 'Anda sudah terdaftar pada kegiatan ini' });
@@ -537,16 +537,16 @@ app.post('/participate', async (req, res) => {
     }
 });
 
-// Rute untuk mendapatkan peserta berdasarkan kegiatanId
-app.get('/participations/:kegiatanId', async (req, res) => {
+// Rute untuk mendapatkan peserta berdasarkan eventId
+app.get('/participations/:eventId', async (req, res) => {
     const { kegiatanId } = req.params;
 
     try {
-        // Cari semua partisipasi berdasarkan kegiatanId
+        // Cari semua partisipasi berdasarkan eventId
         const participations = await Participation.find({ kegiatanId: kegiatanId });
 
         if (!participations || participations.length === 0) {
-            return res.status(404).json({ message: 'No participants found for this kegiatan' });
+            return res.status(404).json({ message: 'No participants found for this event' });
         }
 
         // Ambil data pengguna berdasarkan stambuk yang ada di participations
@@ -569,7 +569,7 @@ app.get('/participations/:kegiatanId', async (req, res) => {
     }
 });
 
-// MENGHAPUS PESERTA KEGIATAN
+// MENGHAPUS PESERTA EVENT
 app.delete('/participations/:id', async (req, res) => {
     const { id } = req.params;
 
@@ -601,13 +601,13 @@ app.get('/historyevent/:userId', async (req, res) => {
             return res.status(404).json({ message: 'No participations found for this user' });
         }
 
-        // Mengambil hanya kegiatanId dari partisipasi
-        const KegiatanIds = participations.map(participation => participation.kegiatanId);
-        console.log('Kegiatan IDs:', KegiatanIds); // Debug
+        // Mengambil hanya eventId dari partisipasi
+        const kegiatanIds = participations.map(participation => participation.kegiatanId);
+        console.log('Event IDs:', kegiatanIds); // Debug
 
-        // Fetch detail kegiatan menggunakan keguiatanId
-        const kegiatan = await Kegiatan.find({ _id: { $in: KegiatanIds } });
-        res.status(200).json(kegiatan);
+        // Fetch detail event menggunakan eventId
+        const kegiatans = await Kegiatan.find({ _id: { $in: kegiatanIds } });
+        res.status(200).json(kegiatans);
     } catch (error) {
         console.error('Error fetching participations:', error);
         res.status(500).json({ message: 'Failed to fetch participations', error });
@@ -617,7 +617,7 @@ app.get('/historyevent/:userId', async (req, res) => {
 app.get('/participations/user/:stambuk', async (req, res) => {
     const { stambuk } = req.params;
     try {
-        const participations = await Participation.find({ stambuk }).populate('kegiatan');
+        const participations = await Participation.find({ stambuk }).populate('event');
         res.json(participations.map(p => p.event));
     } catch (err) {
         res.status(500).json({ message: 'Error fetching participations', error: err });
