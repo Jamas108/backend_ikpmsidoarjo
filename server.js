@@ -508,21 +508,21 @@ app.delete('/kegiatans/:id', async (req, res) => {
 // Define the Participation model
 const Participation = mongoose.model('Participation', new mongoose.Schema({
     userId: { type: String, required: true },
-    eventId: { type: String, required: true },
+    kegiatanId: { type: String, required: true },
     createdAt: { type: Date, default: Date.now }
 }));
 
 // Endpoint for event registration
 app.post('/participate', async (req, res) => {
-    const { userId, eventId } = req.body;
+    const { userId, kegiatanId } = req.body;
 
-    if (!userId || !eventId) {
+    if (!userId || !kegiatanId) {
         return res.status(400).json({ message: 'User ID and Event ID are required' });
     }
 
     try {
         // Check if the user is already registered for the event
-        const existingParticipation = await Participation.findOne({ userId, eventId });
+        const existingParticipation = await Participation.findOne({ userId, kegiatanId });
         if (existingParticipation) {
             return res.status(400).json({ message: 'Anda sudah terdaftar pada kegiatan ini' });
         }
@@ -538,12 +538,12 @@ app.post('/participate', async (req, res) => {
 });
 
 // Rute untuk mendapatkan peserta berdasarkan eventId
-app.get('/participations/:eventId', async (req, res) => {
-    const { eventId } = req.params;
+app.get('/participations/:kegiatanId', async (req, res) => {
+    const { kegiatanId } = req.params;
 
     try {
         // Cari semua partisipasi berdasarkan eventId
-        const participations = await Participation.find({ eventId: eventId });
+        const participations = await Participation.find({ kegiatanId: kegiatanId });
 
         if (!participations || participations.length === 0) {
             return res.status(404).json({ message: 'No participants found for this event' });
@@ -602,12 +602,12 @@ app.get('/historyevent/:userId', async (req, res) => {
         }
 
         // Mengambil hanya eventId dari partisipasi
-        const eventIds = participations.map(participation => participation.eventId);
-        console.log('Event IDs:', eventIds); // Debug
+        const kegiatanIds = participations.map(participation => participation.kegiatanId);
+        console.log('Event IDs:', kegiatanIds); // Debug
 
         // Fetch detail event menggunakan eventId
-        const events = await Event.find({ _id: { $in: eventIds } });
-        res.status(200).json(events);
+        const kegiatan = await Kegiatan.find({ _id: { $in: kegiatanIds } });
+        res.status(200).json(kegiatan);
     } catch (error) {
         console.error('Error fetching participations:', error);
         res.status(500).json({ message: 'Failed to fetch participations', error });
