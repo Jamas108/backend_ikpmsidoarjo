@@ -395,7 +395,7 @@ async function uploadToImgur(imageBuffer) {
 }
 
 // Endpoint untuk menambah event baru
-app.post('/kegiatan', upload.single('poster'), async (req, res) => {
+app.post('/kegiatans', upload.single('poster'), async (req, res) => {
     const { name, date, time, location, description } = req.body;
     const posterBuffer = req.file ? req.file.buffer : null; // Ambil buffer gambar dari file yang di-upload
 
