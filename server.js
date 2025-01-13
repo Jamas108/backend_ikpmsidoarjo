@@ -552,7 +552,7 @@ app.get('/participations/:eventId', async (req, res) => {
         // Ambil data pengguna berdasarkan stambuk yang ada di participations
         const participantsWithNames = [];
         for (const participation of participations) {
-            const user = await User.findOne({ stambuk: participation.userId }); // Mengambil nama berdasarkan stambuk
+            const user = await Alumni.findOne({ stambuk: participation.userId }); // Mengambil nama berdasarkan stambuk
             if (user) {
                 participantsWithNames.push({
                     _id: participation._id,
