@@ -348,9 +348,9 @@ app.get('/users', async (req, res) => {
 
 
 
-//KEGIATAN BACKEND
+//EVENT BACKEND
 
-// Skema dan model Mongoose untuk Kegiatan
+// Skema dan model Mongoose untuk Event
 const KegiatanSchema = new mongoose.Schema({
     name: { type: String, required: true },
     date: { type: String, required: true },
@@ -394,7 +394,7 @@ async function uploadToImgur(imageBuffer) {
     }
 }
 
-// Endpoint untuk menambah kegiatan baru
+// Endpoint untuk menambah event baru
 app.post('/kegiatan', upload.single('poster'), async (req, res) => {
     const { name, date, time, location, description } = req.body;
     const posterBuffer = req.file ? req.file.buffer : null; // Ambil buffer gambar dari file yang di-upload
@@ -408,7 +408,7 @@ app.post('/kegiatan', upload.single('poster'), async (req, res) => {
         // Unggah gambar ke Imgur
         const posterUrl = await uploadToImgur(posterBuffer);
 
-        // Simpan data kegiatan ke MongoDB dengan URL gambar dari Imgur
+        // Simpan data event ke MongoDB dengan URL gambar dari Imgur
         const newKegiatan = new Kegiatan({
             name,
             date,
@@ -419,14 +419,14 @@ app.post('/kegiatan', upload.single('poster'), async (req, res) => {
         });
 
         await newKegiatan.save();
-        res.status(201).json(newKegiatan); // Kembalikan data kegiatan yang baru dibuat
+        res.status(201).json(newKegiatan); // Kembalikan data event yang baru dibuat
     } catch (error) {
         console.error('Kesalahan membuat kegiatan:', error.message);
         res.status(500).json({ error: 'kesalahan membuat kagiatan' });
     }
 });
 
-// Rute untuk mendapatkan semua kegiatan
+// Rute untuk mendapatkan semua event
 app.get('/kegiatans', async (req, res) => {
     try {
         const kegiatans = await Kegiatan.find();
@@ -450,10 +450,10 @@ app.put('/kegiatans/:id', upload.single('poster'), async (req, res) => {
     }
 
     try {
-        const kegiatan = await Kegiatan.findById(id);
+        const kegiatan = await Event.findById(id);
         if (!kegiatan) return res.status(404).json({ message: 'Kegiatan tidak ditemukan' });
 
-        // Update field kegiatan
+        // Update field event
         kegiatan.name = req.body.name || kegiatan.name;
         kegiatan.date = req.body.date || kegiatan.date;
         kegiatan.time = req.body.time || kegiatan.time;
@@ -477,7 +477,7 @@ app.put('/kegiatans/:id', upload.single('poster'), async (req, res) => {
             }
         }
 
-        // Simpan pembaruan kegiatan
+        // Simpan pembaruan event
         const updatedKegiatan = await kegiatan.save();
         res.json(updatedKegiatan);
     } catch (error) {
@@ -501,7 +501,7 @@ app.delete('/kegiatans/:id', async (req, res) => {
         res.status(200).json({ message: 'Kegiatan berhasil dihapus' });
     } catch (error) {
         console.error('Gagal menghapus kegiatan:', error.message);
-        res.status(500).json({ message: 'Gagal menghapus kegiatan' });
+        res.status(500).json({ message: 'Kegiatan berhasil dihapus' });
     }
 });
 
@@ -542,22 +542,22 @@ app.get('/participations/:kegiatanId', async (req, res) => {
     const { kegiatanId } = req.params;
 
     try {
-        // Cari semua partisipasi berdasarkan eventId
-        const participations = await Participation.find({ kegiatanId: kegiatanId });
+        // Cari semua partisipasi berdasarkan kegiatanId
+        const participations = await Participation.find({ kegiatanId });
 
         if (!participations || participations.length === 0) {
             return res.status(404).json({ message: 'No participants found for this event' });
         }
 
-        // Ambil data pengguna berdasarkan stambuk yang ada di participations
+        // Ambil data pengguna berdasarkan userId yang ada di participations
         const participantsWithNames = [];
         for (const participation of participations) {
-            const user = await User.findOne({ stambuk: participation.userId }); // Mengambil nama berdasarkan stambuk
+            const user = await User.findOne({ stambuk: participation.userId }); // Ambil nama berdasarkan stambuk
             if (user) {
                 participantsWithNames.push({
                     _id: participation._id,
-                    name: user.nama, // Ambil nama dari User
-                    stambuk: user.stambuk, // Asumsi ada email di tabel users
+                    name: user.nama,
+                    stambuk: user.stambuk,
                 });
             }
         }
@@ -603,7 +603,7 @@ app.get('/historyevent/:userId', async (req, res) => {
 
         // Mengambil hanya eventId dari partisipasi
         const kegiatanIds = participations.map(participation => participation.kegiatanId);
-        console.log('Event IDs:', kegiatanIds); // Debug
+        console.log('Kegiatan IDs:', kegiatanIds); // Debug
 
         // Fetch detail event menggunakan eventId
         const kegiatans = await Kegiatan.find({ _id: { $in: kegiatanIds } });
