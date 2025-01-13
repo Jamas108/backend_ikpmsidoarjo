@@ -652,9 +652,9 @@ app.get('/participations/user/:stambuk', async (req, res) => {
 
 
 
-// LOGIKA BACKEND BERITA //
-// SKEMA TABEL BERITA
-const BeritaSchema = new mongoose.Schema({
+// LOGIKA BACKEND INFORMASI //
+// SKEMA TABEL INFORMASI
+const InformasiSchema = new mongoose.Schema({
     name: { type: String, required: true },
     date: { type: String, required: true },
     time: { type: String, required: true },
@@ -662,17 +662,17 @@ const BeritaSchema = new mongoose.Schema({
     image: { type: String, required: true },
 });
 
-// KODE UNTUK MODEL BERITA
-const Berita = mongoose.model('Berita', BeritaSchema);
-const uploadBerita = multer({ storage: storage });
+// KODE UNTUK MODEL INFORMASI
+const Informasi = mongoose.model('Informasi', InformasiSchema);
+const uploadInformasi = multer({ storage: storage });
 
 // Fungsi untuk meng-upload gambar ke Imgur
 
 
 // Middleware untuk upload file
 
-// KODE UNTUK MEMBUAT ATAU MENAMBAH BERITA
-app.post('/beritas', uploadBerita.single('image'), async (req, res) => {
+// KODE UNTUK MEMBUAT ATAU MENAMBAH INFORMASI
+app.post('/informasis', uploadInformasi.single('image'), async (req, res) => {
     const { name, date, time, description } = req.body;
     const imageBuffer = req.file ? req.file.buffer : null;  // Ambil buffer gambar dari file yang di-upload
 
@@ -685,8 +685,8 @@ app.post('/beritas', uploadBerita.single('image'), async (req, res) => {
         // Unggah gambar ke Imgur
         const imageUrl = await uploadToImgur(imageBuffer);
 
-        // Simpan berita baru dengan URL gambar dari Imgur
-        const newBerita = new Berita({
+        // Simpan informasi baru dengan URL gambar dari Imgur
+        const newInformasi = new Informasi({
             name,
             date,
             time,
@@ -694,41 +694,41 @@ app.post('/beritas', uploadBerita.single('image'), async (req, res) => {
             image: imageUrl,  // URL gambar Imgur
         });
 
-        await newBerita.save(); // Simpan berita ke database
-        res.status(201).json(newBerita); // Kembalikan data berita yang baru ditambahkan
+        await newInformasi.save(); // Simpan informasi ke database
+        res.status(201).json(newInformasi); // Kembalikan data informasi yang baru ditambahkan
     } catch (error) {
-        console.error('Error saving berita:', error.message);
-        res.status(500).json({ error: 'Error saving berita' });
+        console.error('Gagal Menyimpan Informasi:', error.message);
+        res.status(500).json({ error: 'Gagal Menyimpan Informasi' });
     }
 });
 
-// KODE UNTUK MENGAMBIL SEMUA BERITA DARI DATABASE (FETCH)
-app.get('/beritas', async (req, res) => {
+// KODE UNTUK MENGAMBIL SEMUA INFORMASI DARI DATABASE (FETCH)
+app.get('/informasis', async (req, res) => {
     try {
-        const beritas = await Berita.find();
-        res.json(beritas);
+        const informasis = await Informasi.find();
+        res.json(informasis);
     } catch (err) {
-        res.status(500).json({ message: 'Gagal Mendapatkan Informasi Berita' });
+        res.status(500).json({ message: 'Gagal Mendapatkan Informasi' });
     }
 });
 
-// KODE UNTUK MELIHAT DETAIL BERITA BERDASARKAN ID BERITA
-app.get('/beritas/:id', async (req, res) => {
+// KODE UNTUK MELIHAT DETAIL INFORMASI BERDASARKAN ID INFORMASI
+app.get('/informasis/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
-        const berita = await Berita.findById(id);
-        if (!berita) {
-            return res.status(404).json({ message: 'Berita tidak ditemukan' });
+        const informasi = await Informasi.findById(id);
+        if (!informasi) {
+            return res.status(404).json({ message: 'informasi tidak ditemukan' });
         }
-        res.json(berita);
+        res.json(informasi);
     } catch (err) {
-        res.status(500).json({ message: 'Gagal mengambil detail berita' });
+        res.status(500).json({ message: 'Gagal mengambil detail informasi' });
     }
 });
 
-// KODE UNTUK EDIT BERITA
-app.put('/beritas/:id', uploadBerita.single('image'), async (req, res) => {
+// KODE UNTUK EDIT Informasi
+app.put('/informasis/:id', uploadInformasi.single('image'), async (req, res) => {
     const { id } = req.params;
 
     // Validasi ID
@@ -737,14 +737,14 @@ app.put('/beritas/:id', uploadBerita.single('image'), async (req, res) => {
     }
 
     try {
-        const berita = await Berita.findById(id);
-        if (!berita) return res.status(404).json({ message: 'Berita tidak ditemukan' });
+        const informasi = await Informasi.findById(id);
+        if (!informasi) return res.status(404).json({ message: 'informasi tidak ditemukan' });
 
-        // Update field berita
-        berita.name = req.body.name || berita.name;
-        berita.date = req.body.date || berita.date;
-        berita.time = req.body.time || berita.time;
-        berita.description = req.body.description || berita.description;
+        // Update field informasi
+        informasi.name = req.body.name || informasi.name;
+        informasi.date = req.body.date || informasi.date;
+        informasi.time = req.body.time || informasi.time;
+        informasi.description = req.body.description || informasi.description;
 
         // Update gambar jika ada file baru
         if (req.file) {
@@ -753,7 +753,7 @@ app.put('/beritas/:id', uploadBerita.single('image'), async (req, res) => {
                 const imageUrl = await uploadToImgur(req.file.buffer);
 
                 // Update URL gambar di database
-                berita.image = imageUrl;
+                informasi.image = imageUrl;
             } catch (error) {
                 console.error('Error uploading image to Imgur:', error.message);
                 return res.status(500).json({ message: 'Gagal mengunggah gambar ke Imgur' });
@@ -761,29 +761,29 @@ app.put('/beritas/:id', uploadBerita.single('image'), async (req, res) => {
         }
 
         // Simpan perubahan
-        const updatedBerita = await berita.save();
-        res.status(200).json(updatedBerita);
+        const updatedInformasi = await informasi.save();
+        res.status(200).json(updatedInformasi);
     } catch (error) {
-        console.error('Error updating berita:', error.message);
+        console.error('Error updating informasi:', error.message);
         res.status(500).json({ message: error.message });
     }
 });
 
-// KODE UNTUK MENGHAPUS BERITA
-app.delete('/beritas/:id', async (req, res) => {
+// KODE UNTUK MENGHAPUS INFORMASI
+app.delete('/informasis/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
-        const berita = await Berita.findByIdAndDelete(id);
+        const informasi = await Informasi.findByIdAndDelete(id);
 
-        if (!berita) {
-            return res.status(404).json({ message: 'Berita not found' });
+        if (!informasi) {
+            return res.status(404).json({ message: 'informasi not found' });
         }
 
-        res.status(200).json({ message: 'Berita deleted successfully' });
+        res.status(200).json({ message: 'informasi deleted successfully' });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Gagal menghapus berita' });
+        res.status(500).json({ message: 'Gagal menghapus informasi' });
     }
 });
 
@@ -796,7 +796,7 @@ app.delete('/beritas/:id', async (req, res) => {
 // KOMENTAR BACKEND LOGIC //
 // KODE UNTUK MEMBUAT SKEMA TABEL KOMENTAR
 const CommentSchema = new mongoose.Schema({
-    beritaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Berita', required: true },
+    informasiId: { type: mongoose.Schema.Types.ObjectId, ref: 'Informasi', required: true },
     comment: { type: String, required: true },
     stambuk: { type: String, required: true },
     nama: { type: String, required: true },  // Nama pengguna yang ditambahkan
@@ -809,11 +809,11 @@ const Comment = mongoose.model('Comment', CommentSchema);
 
 // KODE UNTUK MENAMBAHKAN KOMENTAR
 app.post('/comments', async (req, res) => {
-    const { beritaId, stambuk, comment } = req.body;
+    const { informasiId, stambuk, comment } = req.body;
 
-    if (!beritaId || !stambuk || !comment) {
+    if (!informasiId || !stambuk || !comment) {
         console.log("Invalid data: ", req.body);
-        return res.status(400).json({ message: 'Berita ID, Stambuk, dan Komentar harus diisi' });
+        return res.status(400).json({ message: 'Informasi ID, Stambuk, dan Komentar harus diisi' });
     }
 
     try {
@@ -826,7 +826,7 @@ app.post('/comments', async (req, res) => {
 
         // Menyimpan komentar dengan nama dan stambuk user yang ditemukan
         const newComment = new Comment({
-            beritaId,
+            informasiId,
             comment,
             stambuk,
             nama: user.nama,  // Menyertakan nama pengguna
@@ -841,17 +841,17 @@ app.post('/comments', async (req, res) => {
     }
 });
 
-// KODE UNTUK MENGAMBIL KOMENTAR BERDASARKAN ID BERITA 
-app.get('/comments/:beritaId', async (req, res) => {
-    const { beritaId } = req.params;
+// KODE UNTUK MENGAMBIL KOMENTAR BERDASARKAN ID INFORMASI 
+app.get('/comments/:informasiId', async (req, res) => {
+    const { informasiId } = req.params;
 
-    if (!beritaId) {
-        return res.status(400).json({ message: 'Berita ID harus diisi' });
+    if (!informasiId) {
+        return res.status(400).json({ message: 'informasi ID harus diisi' });
     }
 
     try {
-        // Ambil semua komentar berdasarkan beritaId
-        const comments = await Comment.find({ beritaId }); // Populate untuk mengambil username berdasarkan userId
+        // Ambil semua komentar berdasarkan INFORMASI ID
+        const comments = await Comment.find({ informasiId }); // Populate untuk mengambil username berdasarkan userId
         res.status(200).json(comments);
     } catch (error) {
         console.error('Error fetching comments:', error);
