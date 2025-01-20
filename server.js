@@ -528,7 +528,7 @@ app.post('/participate', async (req, res) => {
         }
 
         // Create a new participation record
-        const participation = new Participation({ userId, eventId });
+        const participation = new Participation({ userId, kegiatanId });
         await participation.save();
 
         res.status(201).json({ message: 'Berhasil mendaftar kegiatan!' });
