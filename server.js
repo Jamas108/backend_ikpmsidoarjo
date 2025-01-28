@@ -356,6 +356,7 @@ const KegiatanSchema = new mongoose.Schema({
     date: { type: String, required: true },
     time: { type: String, required: true },
     location: { type: String, required: true },
+    status: { type: String, required: true },
     description: { type: String, required: true },
     poster: { type: String, required: true },
 });
@@ -396,11 +397,11 @@ async function uploadToImgur(imageBuffer) {
 
 // Endpoint untuk menambah event baru
 app.post('/kegiatans', upload.single('poster'), async (req, res) => {
-    const { name, date, time, location, description } = req.body;
+    const { name, date, time, location, description, status } = req.body;
     const posterBuffer = req.file ? req.file.buffer : null; // Ambil buffer gambar dari file yang di-upload
 
     // Validasi input
-    if (!name || !date || !time || !location || !description || !posterBuffer) {
+    if (!name || !date || !time || !location || !status || !description || !posterBuffer) {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -414,6 +415,7 @@ app.post('/kegiatans', upload.single('poster'), async (req, res) => {
             date,
             time,
             location,
+            status,
             description,
             poster: posterUrl, // URL dari Imgur
         });
@@ -458,6 +460,7 @@ app.put('/kegiatans/:id', upload.single('poster'), async (req, res) => {
         kegiatan.date = req.body.date || kegiatan.date;
         kegiatan.time = req.body.time || kegiatan.time;
         kegiatan.location = req.body.location || kegiatan.location;
+        kegiatan.status = req.body.status || kegiatan.status;
         kegiatan.description = req.body.description || kegiatan.description;
 
         // Update poster jika ada file baru
@@ -961,6 +964,47 @@ app.get('/kritik', async (req, res) => {
     } catch (error) {
         console.error('Error fetching kritik:', error.message);
         res.status(500).json({ message: 'Gagal memuat kritik' });
+    }
+});
+
+// GET kritik berdasarkan stambuk
+app.get('/kritik/:stambuk', async (req, res) => {
+    try {
+        const { stambuk } = req.params;
+        const kritik = await Kritik.find({ stambuk }).sort({ createdAt: -1 }); // Urutkan berdasarkan waktu terbaru
+        res.json(kritik);
+    } catch (error) {
+        console.error('Error fetching kritik:', error.message);
+        res.status(500).json({ message: 'Gagal memuat kritik' });
+    }
+});
+
+// PUT untuk mengedit kritik
+app.put('/kritik/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { kritik } = req.body;
+
+        // Validasi input
+        if (!kritik) {
+            return res.status(400).json({ message: 'Kritik tidak boleh kosong' });
+        }
+
+        // Update kritik di database
+        const updatedKritik = await Kritik.findByIdAndUpdate(
+            id,
+            { kritik },
+            { new: true }
+        );
+
+        if (!updatedKritik) {
+            return res.status(404).json({ message: 'Kritik tidak ditemukan' });
+        }
+
+        res.status(200).json({ message: 'Kritik berhasil diperbarui', data: updatedKritik });
+    } catch (error) {
+        console.error('Error updating kritik:', error);
+        res.status(500).json({ message: 'Gagal memperbarui kritik' });
     }
 });
 
