@@ -43,7 +43,8 @@ const AlumniSchema = new mongoose.Schema({
     pasangan: { type: String, required: false },
     pekerjaan: { type: String, required: true },
     nama_laqob: { type: String, required: false },
-    ttl: { type: String, required: true },
+    tempat_lahir: { type: String, required: false },
+    tanggal_lahir: { type: String, required: false },
     kecamatan: { type: String, required: true },
     instansi: { type: String, required: false },
     password: { type: String, required: true },
@@ -56,7 +57,7 @@ const Alumni = mongoose.model('Alumni', AlumniSchema);
 app.get('/alumni', async (req, res) => {
     try {
         // Ambil data dari database
-        const alumni = await Alumni.find({}, 'tahun stambuk nama kampus_asal kecamatan alamat no_telepon pasangan nama_laqob pekerjaan ttl instansi');
+        const alumni = await Alumni.find({}, 'tahun stambuk nama kampus_asal kecamatan alamat no_telepon pasangan nama_laqob pekerjaan tempat_lahir tanggal_lahir instansi');
 
         // Format data dengan nomor urut
         const formattedData = alumni.map((alum, index) => ({
@@ -70,7 +71,8 @@ app.get('/alumni', async (req, res) => {
             no_telepon: alum.no_telepon,
             pasangan: alum.pasangan,
             nama_laqob: alum.nama_laqob,
-            ttl: alum.ttl,
+            tempat_lahir: alum.tempat_lahir,
+            tanggal_lahir: alum.tanggal_lahir,
             instansi: alum.instansi,
         }));
 
@@ -98,7 +100,7 @@ app.get('/alumni/:stambuk', async (req, res) => {
         const { stambuk } = req.params;
 
         // Cari data alumni berdasarkan stambuk
-        const alumni = await Alumni.findOne({ stambuk }, 'tahun stambuk nama kampus_asal kecamatan alamat no_telepon pasangan nama_laqob pekerjaan ttl instansi hidden_fields');
+        const alumni = await Alumni.findOne({ stambuk }, 'tahun stambuk nama kampus_asal kecamatan alamat no_telepon pasangan nama_laqob pekerjaan tempat_lahir tanggal_lahir instansi hidden_fields');
 
         if (!alumni) {
             return res.status(404).json({ message: 'Alumni not found' });
@@ -117,7 +119,8 @@ app.get('/alumni/:stambuk', async (req, res) => {
             pasangan: alumni.pasangan,
             nama_laqob: alumni.nama_laqob,
             pekerjaan: alumni.pekerjaan,
-            ttl: alumni.ttl,
+            tempat_lahir: alumni.tempat_lahir,
+            tanggal_lahir: alumni.tanggal_lahir,
             instansi: alumni.instansi,
             hidden_fields: alumni.hidden_fields || [],
         };
