@@ -73,6 +73,7 @@ app.get('/alumni', async (req, res) => {
             nama_laqob: alum.nama_laqob,
             tempat_lahir: alum.tempat_lahir,
             tanggal_lahir: alum.tanggal_lahir,
+            pekerjaan: alum.pekerjaan,
             instansi: alum.instansi,
         }));
 
