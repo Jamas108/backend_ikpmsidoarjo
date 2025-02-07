@@ -44,7 +44,7 @@ const AlumniSchema = new mongoose.Schema({
     pekerjaan: { type: String, required: true },
     nama_laqob: { type: String, required: false },
     tempat_lahir: { type: String, required: false },
-    tanggal_lahir: { type: String, required: false },
+    tanggal_lahir: { type: Date, required: false },
     kecamatan: { type: String, required: true },
     instansi: { type: String, required: false },
     password: { type: String, required: true },
